@@ -23,7 +23,7 @@ export async function createBooking(data: Data) {
 }
 
 export async function finalizeBooking(key: string, bookingId: number) {
-  const result = await prisma.$transaction(async (tx) => {
+  const results = await prisma.$transaction(async (tx) => {
     try {
       await tx.idempotencyKey.create({
         data: {
@@ -47,5 +47,5 @@ export async function finalizeBooking(key: string, bookingId: number) {
     return booking;
   });
 
-  return result;
+  return results;
 }
