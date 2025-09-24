@@ -32,6 +32,7 @@ model IdempotencyKey {
   createdAt DateTime          @default(now())
   bookingId Int?              @unique
   booking  Booking?           @relation(fields: [bookingId], references: [id])
+  finalized Boolean           @default(false)
 }
  
  

@@ -1,3 +1,4 @@
+
 import { PrismaClient } from "../generated/prisma";
 
 const prisma = new PrismaClient();
@@ -23,29 +24,40 @@ export async function createBooking(data: Data) {
 }
 
 export async function finalizeBooking(key: string, bookingId: number) {
-  const results = await prisma.$transaction(async (tx) => {
-    try {
-      await tx.idempotencyKey.create({
-        data: {
-          bookingId,
-          key,
-        },
-      });
-    } catch (error: any) {
-      if (error.code === "P2002") {
-        throw new Error("Duplicate request");
-      }
-      throw new Error("Failed to create idempotency key");
-    }
-
-    const booking = await tx.booking.update({
-      where: { id: bookingId },
-      data: { status: "COMPLETED" },
-      include: { IdempotencyKey: true },
-    });
-
-    return booking;
+  const results = await prisma.booking.update({
+    where: { id: bookingId},
+    data: { status: "COMPLETED" },
   });
 
   return results;
+
+}
+
+
+export async function createIdempotencyKey(key: string, bookingId: number) {
+  const idempotencyKey = await prisma.idempotencyKey.create({
+    data: {
+      key,
+      bookingId,
+    },
+  });
+
+  return idempotencyKey;
+}
+// This function should be locked
+export async function getIdempotencyKey(key: string) {
+  const idempotencyKey = await prisma.idempotencyKey.findUnique({
+    where: { key },
+  });
+
+  return idempotencyKey;
+}
+
+export async function finalizeIdentempotencyKey(key: string) {
+  const idempotencyKey = await prisma.idempotencyKey.update({
+    where: { key },
+    data: { finalized: true },
+  });
+
+  return idempotencyKey;
 }
