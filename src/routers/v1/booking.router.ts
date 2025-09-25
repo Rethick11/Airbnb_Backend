@@ -13,4 +13,4 @@ bookingRouter.get('/health', (req, res) => {
     res.status(200).send('all OK');
 });
 
-export default bookingRouter;
+export default bookingRouter;  

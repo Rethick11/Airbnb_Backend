@@ -23,12 +23,12 @@ model Booking {
   bookingAmount Int         
   status    BookingStatus     @default(PENDING)
   IdempotencyKey IdempotencyKey?
-  key     String              @unique
+  idemkey     String              @unique
 }
 
 model IdempotencyKey {
   id        Int               @id @default(autoincrement())
-  key       String            @unique
+  idemkey       String            @unique
   createdAt DateTime          @default(now())
   bookingId Int?              @unique
   booking  Booking?           @relation(fields: [bookingId], references: [id])

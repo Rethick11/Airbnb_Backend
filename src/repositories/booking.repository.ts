@@ -1,5 +1,5 @@
-
-import { PrismaClient } from "../generated/prisma";
+import { Prisma } from "@prisma/client";
+import { PrismaClient, IdempotencyKey } from "../generated/prisma";
 
 const prisma = new PrismaClient();
 
@@ -16,46 +16,61 @@ export async function createBooking(data: Data) {
       userId: data.userId,
       hotelId: data.hotelId,
       bookingAmount: data.bookingAmount,
-      key: data.key,
+      idemkey: data.key,
     },
   });
 
   return booking;
 }
 
-export async function finalizeBooking(key: string, bookingId: number) {
-  const results = await prisma.booking.update({
-    where: { id: bookingId},
+export async function finalizeBooking(
+  tx: Prisma.TransactionClient,
+  key: string,
+  bookingId: number
+) {
+  const results = await tx.booking.update({
+    where: { id: bookingId },
     data: { status: "COMPLETED" },
   });
 
   return results;
-
 }
 
-
-export async function createIdempotencyKey(key: string, bookingId: number) {
+export async function createIdempotencyKey(idemkey: string, bookingId: number) {
   const idempotencyKey = await prisma.idempotencyKey.create({
     data: {
-      key,
+      idemkey,
       bookingId,
     },
   });
 
   return idempotencyKey;
 }
-// This function should be locked
-export async function getIdempotencyKey(key: string) {
-  const idempotencyKey = await prisma.idempotencyKey.findUnique({
-    where: { key },
-  });
 
-  return idempotencyKey;
+// This function should be locked
+export async function getIdempotencyKey(
+  tx: Prisma.TransactionClient,
+  idemkey: string
+) {
+  
+
+  const idempotencyKey = await prisma.$queryRaw<IdempotencyKey[]>`
+SELECT * FROM "IdempotencyKey" WHERE idemkey = ${idemkey} FOR UPDATE;
+`;
+
+  if (idempotencyKey.length == 0) {
+    throw new Error("invalid key found ");
+  }
+
+  return idempotencyKey[0];
 }
 
-export async function finalizeIdentempotencyKey(key: string) {
-  const idempotencyKey = await prisma.idempotencyKey.update({
-    where: { key },
+export async function finalizeIdentempotencyKey(
+  tx: Prisma.TransactionClient,
+  idemkey: string
+) {
+  const idempotencyKey = await tx.idempotencyKey.update({
+    where: { idemkey },
     data: { finalized: true },
   });
 

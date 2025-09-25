@@ -33,7 +33,7 @@ export async function createBookingService(
 
 export async function finalizeBookingService(key: string, bookingId: number) {
   return await prisma.$transaction(async (tx) => {
-    const idempotencyKey = await getIdempotencyKey(key);
+    const idempotencyKey = await getIdempotencyKey(tx, key);
 
     if (!idempotencyKey) {
       throw new Error("No Key found");
@@ -43,9 +43,10 @@ export async function finalizeBookingService(key: string, bookingId: number) {
       throw new Error("Duplicate request");
     }
 
-    const booking = await finalizeBooking(key, bookingId);
-    await finalizeIdentempotencyKey(key);
+    const booking = await finalizeBooking(tx, key, bookingId);
+    await finalizeIdentempotencyKey(tx, key);
 
     return booking;
   });
 }
+ 
