@@ -11,16 +11,20 @@ interface Data {
 }
 
 export async function createBooking(data: Data) {
-  const booking = await prisma.booking.create({
-    data: {
-      userId: data.userId,
-      hotelId: data.hotelId,
-      bookingAmount: data.bookingAmount,
-      idemkey: data.key,
-    },
-  });
+  
+   
+   
+    const booking = await prisma.booking.create({
+      data: {
+        userId: data.userId,
+        hotelId: data.hotelId,
+        bookingAmount: data.bookingAmount,
+        idemkey: data.key,
+      },
+    });
 
-  return booking;
+    return booking;
+  
 }
 
 export async function finalizeBooking(
@@ -52,8 +56,6 @@ export async function getIdempotencyKey(
   tx: Prisma.TransactionClient,
   idemkey: string
 ) {
-  
-
   const idempotencyKey = await prisma.$queryRaw<IdempotencyKey[]>`
 SELECT * FROM "IdempotencyKey" WHERE idemkey = ${idemkey} FOR UPDATE;
 `;

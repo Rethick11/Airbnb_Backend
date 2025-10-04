@@ -7,6 +7,7 @@ import {
 } from "../repositories/booking.repository";
 import { generateUUID } from "../utils/helpers/uuid.helpers";
 import { PrismaClient } from "../generated/prisma";
+import { redlock } from "../config/redis.config";
 
 const prisma = new PrismaClient();
 
@@ -15,20 +16,28 @@ export async function createBookingService(
   bookingAmount: number,
   hotelId: number
 ): Promise<{ id: number; key: string }> {
-  const key = generateUUID();
-  const booking = await createBooking({
-    userId,
-    bookingAmount,
-    hotelId,
-    key,
-  });
+  try {
+    const lock = await redlock.acquire([`lock:hotel_id:${hotelId}`], 1200000); 
+// 20 minutes
 
-  await createIdempotencyKey(key, booking.id);
+    console.log(lock, "lock acquired")
+    const key = generateUUID();
+    const booking = await createBooking({
+      userId,
+      bookingAmount,
+      hotelId,
+      key,
+    });
 
-  return {
-    id: booking.id,
-    key: key,
-  };
+    await createIdempotencyKey(key, booking.id);
+
+    return {
+      id: booking.id,
+      key: key,
+    };
+  } catch {
+    throw new Error("lock is present");
+  }
 }
 
 export async function finalizeBookingService(key: string, bookingId: number) {
@@ -49,4 +58,3 @@ export async function finalizeBookingService(key: string, bookingId: number) {
     return booking;
   });
 }
- 
