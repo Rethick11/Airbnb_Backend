@@ -10,8 +10,8 @@ export const redlock = new Redlock(
   {
     driftFactor: 0.01, 
     retryCount: 10,
-    retryDelay: 200, // time in ms
-    retryJitter: 200, // time in ms
-    automaticExtensionThreshold: 500, // time in ms
+    retryDelay: 200, 
+    retryJitter: 200, 
+    automaticExtensionThreshold: 500, 
   }
 );
