@@ -11,8 +11,6 @@ interface Data {
 }
 
 export async function createBooking(data: Data) {
-  
-   
    
     const booking = await prisma.booking.create({
       data: {

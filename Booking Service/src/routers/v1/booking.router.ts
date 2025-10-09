@@ -5,9 +5,9 @@ import { createBookingHandler, finalizeBookingHandler } from '../../controllers/
 
 const bookingRouter = express.Router();
 
-bookingRouter.post('/createBooking', validateRequestBody(bookingSchema), createBookingHandler); // TODO: Resolve this TS compilation issue
+bookingRouter.post('/createBooking', validateRequestBody(bookingSchema), createBookingHandler); 
 
-bookingRouter.post('/finalizeBooking', finalizeBookingHandler); // TODO: Resolve this TS compilation issue
+bookingRouter.post('/finalizeBooking', finalizeBookingHandler); 
 
 bookingRouter.get('/health', (req, res) => {
     res.status(200).send('all OK');

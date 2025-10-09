@@ -52,6 +52,8 @@ export async function finalizeBookingService(key: string, bookingId: number) {
       throw new Error("Duplicate request");
     }
 
+    // payment handler part goes here
+
     const booking = await finalizeBooking(tx, key, bookingId);
     await finalizeIdentempotencyKey(tx, key);
 
