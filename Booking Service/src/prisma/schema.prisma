@@ -14,6 +14,7 @@ enum BookingStatus {
   CONFIRMED 
   COMPLETED
 }
+
 model Booking {
   id         Int              @id @default(autoincrement())
   userId     Int
@@ -36,3 +37,49 @@ model IdempotencyKey {
 }
  
  
+
+
+// hotel model :)
+
+
+
+
+
+model Hotel {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String
+  pincode   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rooms     Room[]
+}
+
+model Room {
+  id         Int      @id @default(autoincrement())
+  hotelId    Int
+  roomType   String
+  basePrice  Decimal  @db.Decimal(10, 2)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  
+  hotel      Hotel     @relation(fields: [hotelId], references: [id])
+  availability RoomAvailability[]
+}
+
+model RoomAvailability {
+  id          Int      @id @default(autoincrement())
+  roomId      Int
+  date        DateTime
+  isBooked    Boolean  @default(false)
+  bookingId   Int?     
+  price       Decimal? @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+
+  
+  room        Room     @relation(fields: [roomId], references: [id])
+
+  @@unique([roomId, date]) // ensures one record per room per date
+}
